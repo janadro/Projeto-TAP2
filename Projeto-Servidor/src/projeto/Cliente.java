@@ -4,11 +4,11 @@ package projeto;
  *
  * @author strei
  */
-public class Clientes {
+public class Cliente {
     private String Nome, Apelido, IP;
     private int Porta;
 
-    public Clientes(String Nome, String Apelido, String IP, int Porta) {
+    public Cliente(String Nome, String Apelido, String IP, int Porta) {
         this.Nome = Nome;
         this.Apelido = Apelido;
         this.IP = IP;

@@ -5,7 +5,9 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import sun.rmi.registry.RegistryImpl;
 
 /**
@@ -15,6 +17,8 @@ import sun.rmi.registry.RegistryImpl;
 public class TelaServidor extends javax.swing.JFrame {
     private String ServidorIP;
     private int ServidorPorta;
+    private DefaultTableModel tableModel;
+    private DefaultListModel listModel;
     
     public TelaServidor() {
         initComponents();
@@ -112,17 +116,17 @@ public class TelaServidor extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(TF_PortaServidor, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TF_PortaServidor, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(B_Registrar))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane3))))
+                            .addComponent(jLabel3)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -155,6 +159,8 @@ public class TelaServidor extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         
         ServidorIP = "localhost";
+        tableModel = (DefaultTableModel) T_Clientes.getModel();
+        listModel = new DefaultListModel();
     }//GEN-LAST:event_formWindowOpened
 
     private void B_RegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_RegistrarActionPerformed
@@ -169,17 +175,18 @@ public class TelaServidor extends javax.swing.JFrame {
             RegistryImpl registryImpl = new RegistryImpl(ServidorPorta);
             
             // Passo 2 - Instanciando a classe ServidorImpl que é do tipo ServidorInterface.
-            ServidorChatInterface servidor = new ServidorImpl();
+            ServidorChatInterface servidor = new ServidorImpl(this);
 
             // Passo 3:
             // Possibilitando que a instância contendo métodos remotos fique visível aos clientes. Além do IP e PORTA, deve-se associar um nome a instância.
             // Parâmetros: String (IP, Porta e nome do serviço) e Objeto com métodos remotos.
             Naming.rebind("rmi://" + ServidorIP + ":" + ServidorPorta + "/olaMundo", servidor); 
             
-            JOptionPane.showMessageDialog(rootPane, "Servidor registrado!");
+            TF_PortaServidor.setEnabled(false);
             B_Registrar.setEnabled(false);
+            JOptionPane.showMessageDialog(rootPane, "Servidor registrado!");
         } catch (RemoteException | MalformedURLException ex) {
-            JOptionPane.showMessageDialog(rootPane, "Erro!");
+            JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
             Logger.getLogger(TelaServidor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_B_RegistrarActionPerformed
@@ -205,4 +212,42 @@ public class TelaServidor extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
+
+    protected void adicionarCliente(String apelido, String nome, String ipCliente, String portaCliente) {
+        tableModel.addRow(new Object[T_Clientes.getColumnCount()]);
+        int i = tableModel.getRowCount()-1;
+        
+        T_Clientes.setValueAt(apelido, i, 0);
+        T_Clientes.setValueAt(nome, i, 1);
+        T_Clientes.setValueAt(ipCliente, i, 2);
+        T_Clientes.setValueAt(portaCliente, i, 3);
+        listarConexoes(apelido, true);
+    }
+    
+    protected void removerCliente(String apelido) {
+        for(int i=0;i<tableModel.getRowCount();i++) {
+            if(T_Clientes.getValueAt(i, 0).equals(apelido)) {
+                tableModel.removeRow(i);
+                listarConexoes(apelido, false);
+                break;
+            }
+        }
+    }
+    
+    private void listarConexoes(String apelido, boolean flag) {
+        String msg;
+        if(flag)
+            msg = apelido + " conectou!";
+        else
+            msg = apelido + " desconectou!";
+            
+        listModel.addElement(msg);
+        L_Relatorios.setModel(listModel);
+    }
+    
+    protected void listarMensagens(String apelidoOrigem, String apelidoDestino) {
+        String msg = apelidoOrigem + " enviou mensagem para " + apelidoDestino + "!";
+        listModel.addElement(msg);
+        L_Relatorios.setModel(listModel);
+    }
 }

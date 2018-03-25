@@ -20,23 +20,10 @@ public class TelaCliente extends javax.swing.JFrame {
     private String ClienteNome, ClienteApelido, ClienteIP;
     private int ClientePorta;
     private ServidorChatInterface servidor;
-    
     private DefaultListModel listModel;
     
     public TelaCliente() {
         initComponents();
-    }
-    
-    public void ListarClientes(String apelido, String nome) {
-        System.out.println("Apelido: " + apelido + "\nNome: " + nome);
-        
-//        for(int i=0;i<listModel.size();i++)
-//            if(listModel.getElementAt(i).toString().equals(apelido))
-//                return;
-        listModel = new DefaultListModel();
-        listModel.addElement("Todos");
-        listModel.addElement(apelido);
-        L_UsuariosAtivos.setModel(listModel);
     }
 
     @SuppressWarnings("unchecked")
@@ -121,6 +108,11 @@ public class TelaCliente extends javax.swing.JFrame {
 
         B_Logout.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         B_Logout.setText("Logout");
+        B_Logout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                B_LogoutActionPerformed(evt);
+            }
+        });
 
         jLabel9.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel9.setText("USUÁRIOS ATIVOS");
@@ -139,6 +131,11 @@ public class TelaCliente extends javax.swing.JFrame {
 
         B_Enviar.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         B_Enviar.setText("Enviar");
+        B_Enviar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                B_EnviarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -162,6 +159,9 @@ public class TelaCliente extends javax.swing.JFrame {
                             .addComponent(TF_ServidorPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jSeparator1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jSeparator2)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -186,20 +186,17 @@ public class TelaCliente extends javax.swing.JFrame {
                                         .addComponent(B_Logout, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel5)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel9))
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel10)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                    .addComponent(TF_Mensagem)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(B_Enviar))
-                                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel9))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel10)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                            .addComponent(TF_Mensagem)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(B_Enviar))
+                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
@@ -268,8 +265,12 @@ public class TelaCliente extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         
         ClienteIP = "localhost";
+        listModel = new DefaultListModel();
+        adicionarCliente("Todos", null);
         
-        
+        B_Logout.setEnabled(false);
+        TF_Mensagem.setEnabled(false);
+        B_Enviar.setEnabled(false);
     }//GEN-LAST:event_formWindowOpened
 
     private void B_LoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_LoginActionPerformed
@@ -302,14 +303,48 @@ public class TelaCliente extends javax.swing.JFrame {
             // Recuperando o objeto remoto do servidor.
             // Para obtê-lo é necessário indicar o IP, Porta e Nome do serviço (nome associado a instância do objeto remoto)
             servidor = (ServidorChatInterface) Naming.lookup("rmi://" + ServidorIP + ":" + ServidorPorta + "/olaMundo");
-            JOptionPane.showMessageDialog(rootPane, "Conectado com sucesso!");
-            
             int resultado = servidor.conectar(ClienteApelido, ClienteNome, ClienteIP, Integer.toString(ClientePorta));
+            
+            if(resultado == 0) {
+                habilitarDesabilitarCampos(false);
+                JOptionPane.showMessageDialog(rootPane, "Conectado com sucesso!");
+            }
+            else
+                JOptionPane.showMessageDialog(rootPane, "Erro ao conectar. Apelido ou Porta já estão sendo usados!");
         } catch (RemoteException | MalformedURLException | NotBoundException ex) {
-            JOptionPane.showMessageDialog(rootPane, "Erro!");
+            //JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
+            JOptionPane.showMessageDialog(rootPane, "Erro ao conectar. Apelido ou Porta já estão sendo usados!");
             Logger.getLogger(TelaCliente.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_B_LoginActionPerformed
+
+    private void B_LogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_LogoutActionPerformed
+        try {
+            servidor.desconectar(ClienteApelido, ClienteIP, Integer.toString(ClientePorta));
+            JOptionPane.showMessageDialog(rootPane, "Você se desconectou!");
+        } catch (RemoteException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
+            Logger.getLogger(TelaCliente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_B_LogoutActionPerformed
+
+    private void B_EnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_EnviarActionPerformed
+        try {
+            if(TF_Mensagem.getText().isEmpty())
+                return;
+            
+            String apelidoDestino = L_UsuariosAtivos.getSelectedValue();
+            String mensagem = TF_Mensagem.getText();
+            int resultado = servidor.receberMensagemCliente(ClienteApelido, apelidoDestino, mensagem);
+            
+            TF_Mensagem.setText("");
+            if(resultado == 1)
+                JOptionPane.showMessageDialog(rootPane, "Erro inesperado ao enviar mensagem!");
+        } catch (RemoteException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
+            Logger.getLogger(TelaCliente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_B_EnviarActionPerformed
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -346,4 +381,48 @@ public class TelaCliente extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     // End of variables declaration//GEN-END:variables
+
+    protected void receberMensagem(String apelido, String mensagem) {
+        TP_Chat.setText(TP_Chat.getText() + apelido + ": " + mensagem + "\n");
+    }
+    
+    protected void adicionarCliente(String apelido, String nome) {
+        for(int i=0;i<listModel.size();i++)
+            if(ClienteApelido.equals(apelido) || listModel.getElementAt(i).toString().equals(apelido))
+                return;
+        
+        L_UsuariosAtivos.removeAll();
+        listModel.addElement(apelido);
+        L_UsuariosAtivos.setModel(listModel);
+        L_UsuariosAtivos.setSelectedIndex(0);
+    }
+    
+    protected void removerCliente(String apelido, String nome) {
+        for(int i=0;i<listModel.size();i++)
+            if(listModel.getElementAt(i).equals(apelido))
+                listModel.remove(i);
+        
+        if(ClienteApelido.equals(apelido)) {
+            habilitarDesabilitarCampos(true);
+            
+            listModel.removeAllElements();
+            listModel.addElement("Todos");
+        }
+        L_UsuariosAtivos.removeAll();
+        L_UsuariosAtivos.setModel(listModel);
+        L_UsuariosAtivos.setSelectedIndex(0);
+    }
+    
+    private void habilitarDesabilitarCampos(boolean comando) {
+        TF_ServidorIP.setEnabled(comando);
+        TF_ServidorPorta.setEnabled(comando);
+        TF_ClienteNome.setEnabled(comando);
+        TF_ClienteApelido.setEnabled(comando);
+        TF_ClientePorta.setEnabled(comando);
+        
+        B_Login.setEnabled(comando);
+        B_Logout.setEnabled(!comando);
+        TF_Mensagem.setEnabled(!comando);
+        B_Enviar.setEnabled(!comando);
+    }
 }
