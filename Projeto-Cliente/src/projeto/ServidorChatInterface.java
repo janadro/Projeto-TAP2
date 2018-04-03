@@ -1,10 +1,7 @@
 package projeto;
 
 import java.rmi.*;
-/**
- *
- * @author strei
- */
+
 public interface ServidorChatInterface extends Remote {
     // Receber mensagem do cliente
     // Se apelidoDestino == "TODOS", a mensagem deverá ser enviada a todos os clientes conectados, caso contrário, somente ao cliente informado

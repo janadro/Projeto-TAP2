@@ -10,10 +10,6 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import sun.rmi.registry.RegistryImpl;
 
-/**
- *
- * @author jhana
- */
 public class TelaServidor extends javax.swing.JFrame {
     private String ServidorIP;
     private int ServidorPorta;

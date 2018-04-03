@@ -244,7 +244,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="TF_ClienteNome">
       <Properties>
-        <Property name="text" type="java.lang.String" value="teste"/>
+        <Property name="text" type="java.lang.String" value="streisky"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel7">
@@ -257,7 +257,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="TF_ClienteApelido">
       <Properties>
-        <Property name="text" type="java.lang.String" value="muitoloko"/>
+        <Property name="text" type="java.lang.String" value="streisky"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel8">
@@ -270,7 +270,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="TF_ClientePorta">
       <Properties>
-        <Property name="text" type="java.lang.String" value="1098"/>
+        <Property name="text" type="java.lang.String" value="1574"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="B_Login">

@@ -1,10 +1,7 @@
 package projeto;
 
 import java.rmi.*;
-/**
- *
- * @author jhana
- */
+
 public interface ClienteChatInterface extends Remote {
   
     // Receber mensagem do Servidor

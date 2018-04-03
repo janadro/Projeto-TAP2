@@ -10,10 +10,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import sun.rmi.registry.RegistryImpl;
 
-/**
- *
- * @author jhana
- */
 public class TelaCliente extends javax.swing.JFrame {
     private String ServidorIP;
     private int ServidorPorta;
@@ -21,7 +17,7 @@ public class TelaCliente extends javax.swing.JFrame {
     private int ClientePorta;
     private ServidorChatInterface servidor;
     private DefaultListModel listModel;
-    
+
     public TelaCliente() {
         initComponents();
     }
@@ -86,17 +82,17 @@ public class TelaCliente extends javax.swing.JFrame {
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel6.setText("NOME:");
 
-        TF_ClienteNome.setText("teste");
+        TF_ClienteNome.setText("streisky");
 
         jLabel7.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel7.setText("APELIDO:");
 
-        TF_ClienteApelido.setText("muitoloko");
+        TF_ClienteApelido.setText("streisky");
 
         jLabel8.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel8.setText("PORTA:");
 
-        TF_ClientePorta.setText("1098");
+        TF_ClientePorta.setText("1574");
 
         B_Login.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         B_Login.setText("Login");
@@ -218,7 +214,6 @@ public class TelaCliente extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(29, 29, 29)))
-                .addGap(18, 18, 18)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel5)
@@ -263,11 +258,11 @@ public class TelaCliente extends javax.swing.JFrame {
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         this.setLocationRelativeTo(null);
-        
+
         ClienteIP = "localhost";
         listModel = new DefaultListModel();
         adicionarCliente("Todos", null);
-        
+
         B_Logout.setEnabled(false);
         TF_Mensagem.setEnabled(false);
         B_Enviar.setEnabled(false);
@@ -275,8 +270,8 @@ public class TelaCliente extends javax.swing.JFrame {
 
     private void B_LoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_LoginActionPerformed
         try {
-            if(TF_ServidorIP.getText().isEmpty() || TF_ServidorPorta.getText().isEmpty() || TF_ClienteNome.getText().isEmpty() ||
-                    TF_ClienteApelido.getText().isEmpty() || TF_ClientePorta.getText().isEmpty()) {
+            if (TF_ServidorIP.getText().isEmpty() || TF_ServidorPorta.getText().isEmpty() || TF_ClienteNome.getText().isEmpty()
+                    || TF_ClienteApelido.getText().isEmpty() || TF_ClientePorta.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(rootPane, "Preencha todos os campos!");
                 return;
             }
@@ -285,8 +280,7 @@ public class TelaCliente extends javax.swing.JFrame {
             ClienteNome = TF_ClienteNome.getText();
             ClienteApelido = TF_ClienteApelido.getText();
             ClientePorta = Integer.parseInt(TF_ClientePorta.getText());
-            
-            
+
             // Passo 4 - Registrando o serviço em uma determinada porta.
             RegistryImpl registryImpl = new RegistryImpl(ClientePorta);
 
@@ -304,16 +298,16 @@ public class TelaCliente extends javax.swing.JFrame {
             // Para obtê-lo é necessário indicar o IP, Porta e Nome do serviço (nome associado a instância do objeto remoto)
             servidor = (ServidorChatInterface) Naming.lookup("rmi://" + ServidorIP + ":" + ServidorPorta + "/olaMundo");
             int resultado = servidor.conectar(ClienteApelido, ClienteNome, ClienteIP, Integer.toString(ClientePorta));
-            
-            if(resultado == 0) {
+
+            if (resultado == 0) {
                 habilitarDesabilitarCampos(false);
                 JOptionPane.showMessageDialog(rootPane, "Conectado com sucesso!");
-            }
-            else
+            } else {
                 JOptionPane.showMessageDialog(rootPane, "Erro ao conectar. Apelido ou Porta já estão sendo usados!");
+            }
         } catch (RemoteException | MalformedURLException | NotBoundException ex) {
-            //JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
-            JOptionPane.showMessageDialog(rootPane, "Erro ao conectar. Apelido ou Porta já estão sendo usados!");
+            JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
+            //JOptionPane.showMessageDialog(rootPane, "Erro ao conectar. Apelido ou Porta já estão sendo usados!");
             Logger.getLogger(TelaCliente.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_B_LoginActionPerformed
@@ -330,18 +324,24 @@ public class TelaCliente extends javax.swing.JFrame {
 
     private void B_EnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_EnviarActionPerformed
         try {
-            if(TF_Mensagem.getText().isEmpty())
+            if (TF_Mensagem.getText().isEmpty())
                 return;
-            
+
             String apelidoDestino = L_UsuariosAtivos.getSelectedValue();
             String mensagem = TF_Mensagem.getText();
-            int resultado = servidor.receberMensagemCliente(ClienteApelido, apelidoDestino, mensagem);
             
+            /*Para cripto*/
+            mensagem = SympleCrypto.encrypt(TF_Mensagem.getText());
+            System.out.println(mensagem);
+            int resultado = servidor.receberMensagemCliente(ClienteApelido, apelidoDestino, mensagem);
+
             TF_Mensagem.setText("");
-            if(resultado == 1)
+            if (resultado == 1)
                 JOptionPane.showMessageDialog(rootPane, "Erro inesperado ao enviar mensagem!");
         } catch (RemoteException ex) {
             JOptionPane.showMessageDialog(rootPane, "Erro inesperado!");
+            Logger.getLogger(TelaCliente.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
             Logger.getLogger(TelaCliente.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_B_EnviarActionPerformed
@@ -382,29 +382,31 @@ public class TelaCliente extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     // End of variables declaration//GEN-END:variables
 
-    protected void receberMensagem(String apelido, String mensagem) {
-        TP_Chat.setText(TP_Chat.getText() + apelido + ": " + mensagem + "\n");
+    protected void receberMensagem(String apelido, String mensagem) throws Exception {
+        /*Para Descripto*/
+        mensagem = SympleCrypto.decrypt(mensagem);
+        TP_Chat.setText(TP_Chat.getText() + apelido + ": " + mensagem + "\n");       
     }
-    
+
     protected void adicionarCliente(String apelido, String nome) {
-        for(int i=0;i<listModel.size();i++)
-            if(ClienteApelido.equals(apelido) || listModel.getElementAt(i).toString().equals(apelido))
+        for (int i = 0; i < listModel.size(); i++)
+            if (ClienteApelido.equals(apelido) || listModel.getElementAt(i).toString().equals(apelido))
                 return;
-        
+
         L_UsuariosAtivos.removeAll();
         listModel.addElement(apelido);
         L_UsuariosAtivos.setModel(listModel);
         L_UsuariosAtivos.setSelectedIndex(0);
     }
-    
+
     protected void removerCliente(String apelido, String nome) {
-        for(int i=0;i<listModel.size();i++)
-            if(listModel.getElementAt(i).equals(apelido))
+        for (int i = 0; i < listModel.size(); i++)
+            if (listModel.getElementAt(i).equals(apelido))
                 listModel.remove(i);
-        
-        if(ClienteApelido.equals(apelido)) {
+
+        if (ClienteApelido.equals(apelido)) {
             habilitarDesabilitarCampos(true);
-            
+
             listModel.removeAllElements();
             listModel.addElement("Todos");
         }
@@ -412,14 +414,14 @@ public class TelaCliente extends javax.swing.JFrame {
         L_UsuariosAtivos.setModel(listModel);
         L_UsuariosAtivos.setSelectedIndex(0);
     }
-    
+
     private void habilitarDesabilitarCampos(boolean comando) {
         TF_ServidorIP.setEnabled(comando);
         TF_ServidorPorta.setEnabled(comando);
         TF_ClienteNome.setEnabled(comando);
         TF_ClienteApelido.setEnabled(comando);
         TF_ClientePorta.setEnabled(comando);
-        
+
         B_Login.setEnabled(comando);
         B_Logout.setEnabled(!comando);
         TF_Mensagem.setEnabled(!comando);

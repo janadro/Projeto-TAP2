@@ -9,10 +9,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author jhana
- */
 public class ServidorImpl extends UnicastRemoteObject implements ServidorChatInterface {
     private final TelaServidor telaServidor;
     private final ArrayList<Cliente> listaClientes;

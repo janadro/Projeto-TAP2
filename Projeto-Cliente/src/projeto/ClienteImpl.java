@@ -2,11 +2,9 @@ package projeto;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- *
- * @author jhana
- */
 public class ClienteImpl extends UnicastRemoteObject implements ClienteChatInterface{
     private final TelaCliente telaCliente;
     
@@ -17,7 +15,11 @@ public class ClienteImpl extends UnicastRemoteObject implements ClienteChatInter
 
     @Override
     public void receberMensagemServidor(String apelidoOrigem, String mensagem) throws RemoteException {
-        telaCliente.receberMensagem(apelidoOrigem, mensagem);
+        try {
+            telaCliente.receberMensagem(apelidoOrigem, mensagem);
+        } catch (Exception ex) {
+            Logger.getLogger(ClienteImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
